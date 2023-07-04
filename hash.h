@@ -5,11 +5,12 @@
 #ifndef __HASH_H
 #define __HASH_H
 
+#include <stddef.h>
 #include <stdint.h>
 
 // Prime number for the hash
-#define FNV_PRIME_32 (1<<24 + 1<<8 + 0x93)
-#define FNV_PRIME_64 (1<<40 + 1<<8 + 0xb3)
+#define FNV_PRIME_32 ((1U<<24) + (1<<8) + 0x93)
+#define FNV_PRIME_64 ((1UL<<40) + (1<<8) + 0xb3)
 
 /*
 Avoid using numbers exceeding max ulong size for as long as possible
@@ -46,16 +47,10 @@ Avoid using numbers exceeding max ulong size for as long as possible
 
 // Indirection here because there is a good chance we could change the hash
 // size at some point later on
-typedef hash_t uint32_t
+typedef uint32_t hash_t;
 #define OFFSET_BASIS OFFSET_BASIS_32
 #define FNV_PRIME FNV_PRIME_32
 
-hash_t hash_str(char *str)
-
-// typedef'd since it's structure should be considered opague and subject to
-// change, and it should only be manipulated through its associated functions
-typedef struct {
-    
-} HashTable
+hash_t hash_str(char *str, size_t length);
 
 #endif // __HASH_H
