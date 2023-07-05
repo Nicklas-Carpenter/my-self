@@ -1,7 +1,7 @@
 #ifndef SELF_STRING_H
 #define SELF_STRING_H
 
-#include <hash.h>
+#include "hash.h"
 
 #define STR_LEN_MAX 4096
 
@@ -12,6 +12,6 @@ typedef struct {
 } SelfString;
 
 SelfString *self_string_create(char *raw_str);
-self_string_destroy(SelfString* str);
+void self_string_destroy(SelfString *str);
 
 #endif // SELF_STRING_H

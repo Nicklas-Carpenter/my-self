@@ -6,15 +6,21 @@
 
 SelfString *self_string_create(char *raw_str)
 {
-    size_t len = strnlen(raw_str, STR_MAX_LEN);
+    size_t len = strnlen(raw_str, STR_LEN_MAX);
     char *raw_str_buf = malloc(len);
-    memcpy(raw_str_buf, raw_str);
+    memcpy(raw_str_buf, raw_str, strlen(raw_str));
 
     SelfString *str = malloc(sizeof(SelfString));
     hash_t str_hash = hash_str(raw_str_buf, len);
-    *str = {.raw_str = raw_str_buf, length = len, .hash = str_hash};
+    *str = (SelfString){
+        .raw_str = raw_str_buf,
+        .length = len, 
+        .hash = str_hash
+    };
 }
 
 void self_string_destroy(SelfString *str)
 {
-    str->
+    free(str->raw_str);
+    free(str);
+}
