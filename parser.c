@@ -3,6 +3,11 @@
 #include "debug.h"
 #include "lexer.h"
 #include "parser.h"
+#include "self_vm.h"
+
+static void codegen_bin_msg_ast_node(Code *code)
+{
+}
 
 AstNode *int_ast_node(Symbol *sym)
 {

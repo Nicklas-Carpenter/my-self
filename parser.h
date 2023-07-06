@@ -5,13 +5,7 @@
 
 #include "lexer.h"
 
-enum AstNodeType {
-	UNDEF_NODE,
-	BIN_MSG_NODE,
-	INT_NODE,
-};
-
-#define AST_NODE_CLASS enum AstNodeType type
+#define AST_NODE_CLASS void (*codegen)(Code *code)
 
 typedef struct {
 	AST_NODE_CLASS;
