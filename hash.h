@@ -24,7 +24,7 @@ Avoid using numbers exceeding max ulong size for as long as possible
 #define OFFSET_BASIS_32 2166136261
 #define OFFSET_BASIS_64 14695981039346656037
 
-/* 
+/*
 Avoid using numbers exceeding max ulong size for as long as possible
 
 #define OFFSET_BASIS_128 144066263297769815596495629667062367629

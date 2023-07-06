@@ -71,8 +71,8 @@ printf("%s (line %d): Value string: %s\n", __func__, __LINE__, value);
 
 printf("%s (line %d): Inserting kv pair\n", __func__, __LINE__);
             if(insert(tbl, key, value))
-                puts("Error while attempting to insert kv pair"); 
-            else 
+                puts("Error while attempting to insert kv pair");
+            else
                 printf("%s --> %s\n", key, value);
         } else if (str_eq(word, "get")) {
             char *key = strtok(NULL, " ");
@@ -108,7 +108,7 @@ printf("%s (line %d): Key string: %s\n", __func__, __LINE__, key);
                 }
             }
         } else if (str_eq(word, "remove")) {
-            char *key = strtok(NULL, " "); 
+            char *key = strtok(NULL, " ");
             if (delete(tbl, key))
                 printf("Unable to remove entry with key '%s'. Likely non-existent", key);
         }

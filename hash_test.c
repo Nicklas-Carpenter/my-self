@@ -15,6 +15,6 @@ int main(int argc, char *argv[])
 		the_hash = hash_str(argv[1], strnlen(argv[1], INPUT_LIM));
 	else
 		the_hash = hash_str("", 0);
-		
+
 	printf("hash:\t0x%x\n", the_hash);
 }

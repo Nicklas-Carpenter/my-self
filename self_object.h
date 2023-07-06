@@ -2,8 +2,13 @@
 #define SELF_OBJECT_H
 
 typedef struct {
+
+} SelfPrimitiveObject;
+
+typedef struct {
     char *thing;
 } SelfObject;
+
 
 SelfObject *self_object_create(char *thing);
 void self_object_destroy(SelfObject *obj);

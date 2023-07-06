@@ -18,9 +18,6 @@ printf("%s (line %d): Failed to allocate space for new entry\n", __func__, __LIN
 
 printf("%s (line %d): Initializing new entry\n", __func__, __LINE__);
     *new_entry = (HashTableEntry){.key = k, .value = v, .next = NULL};
-    //new_entry->key = k;
-    //new_entry->value = v;
-    //new_entry->next = NULL;
 printf("%s (line %d): Returning from function\n", __func__, __LINE__);
     return new_entry;
 }
@@ -92,7 +89,7 @@ HashTable *hash_table_alloc(uint8_t new_size_expo)
     return new_table;
 }
 
-// Create a new hash table of default size. Returns NULL if allocation fails 
+// Create a new hash table of default size. Returns NULL if allocation fails
 // otherwise returns the newly allocated table.
 HashTable *hash_table_create() {
     return hash_table_alloc(HASH_TBL_DEFAULT_SIZE_EXPO);
@@ -186,7 +183,7 @@ printf("%s (line %d):Searching for match"
             "\n\texpected hash: %s"
             "\n\tcurrent hash: %s\n",
             __func__, __LINE__, key_hash, cur->key->hash);
-            
+
         cur = cur->next;
 }
 

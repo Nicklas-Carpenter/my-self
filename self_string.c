@@ -14,7 +14,7 @@ SelfString *self_string_create(char *raw_str)
     hash_t str_hash = hash_str(raw_str_buf, len);
     *str = (SelfString){
         .raw_str = raw_str_buf,
-        .length = len, 
+        .length = len,
         .hash = str_hash
     };
 }
