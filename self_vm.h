@@ -1,6 +1,7 @@
 #ifndef SELF_VM_H
 #define SELF_VM_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -16,6 +17,7 @@ typedef struct {
     void *start;
     ptrdiff_t insert_offset;
     ptrdiff_t read_offset;
+    size_t n_entries;
     uint8_t size_expo;
 } SelfVmCode;
 
@@ -31,4 +33,8 @@ SelfVmInstr self_vm_code_get_next_instr(SelfVmCode *code);
 int32_t self_vm_code_get_next_int32(SelfVmCode *code);
 char *self_vm_code_get_next_str_ptr(SelfVmCode *code);
 
+bool self_vm_code_data_remaining(Code *code);
+int self_vm_code_seek(Code *code, ptrdiff_t offset);
+
+void print_self_vm_code(Code *code);
 #endif // SELF_VM_H

@@ -5,7 +5,7 @@
 
 #include "lexer.h"
 
-#define AST_NODE_CLASS void (*codegen)(Code *code)
+#define AST_NODE_CLASS void (*codegen)(AstNode* self, Code *code)
 
 typedef struct {
 	AST_NODE_CLASS;
