@@ -6,7 +6,10 @@
 #include "lexer.h"
 #include "self_vm.h"
 
-#define AST_NODE_CLASS void (*codegen)(struct ast_node *self, SelfVmCode *code)
+#define AST_NODE_CLASS\
+    void (*codegen)(struct ast_node *self, SelfVmCode *code);\
+    void (*destroy)(struct ast_node *self)
+
 
 typedef struct ast_node {
 	AST_NODE_CLASS;

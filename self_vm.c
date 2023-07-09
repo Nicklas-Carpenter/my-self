@@ -47,20 +47,20 @@ static inline int self_vm_code_resize(SelfVmCode *code)
 
 static int insert_data(SelfVmCode *code, void *data, size_t size)
 {
-d_printf("%s (line %d): inserting %d bytes of data\n", __func__, __LINE__, size);
+//d_printf("%s (line %d): inserting %d bytes of data\n", __func__, __LINE__, size);
     // If the number of bytes remaining is less than the size of the data we
     // want to insert, we need to resize before insertion.
     if (code->insert_offset + size > 1<<(code->size_expo)) {
-d_printf("%s (line %d): Not enough space to insert data. Resizing...\n", __func__, __LINE__);
+//d_printf("%s (line %d): Not enough space to insert data. Resizing...\n", __func__, __LINE__);
         // If resizing fails, indicate an error.
         if (self_vm_code_resize(code))
             return -1;
 
     }
 
-d_printf("%s (line %d): insert offset = %d\n", __func__, __LINE__, code->insert_offset);
+//d_printf("%s (line %d): insert offset = %d\n", __func__, __LINE__, code->insert_offset);
     memcpy((code->start + code->insert_offset), data, size);
-d_printf("%s (line %d): Updating offset\n", __func__, __LINE__);
+//d_printf("%s (line %d): Updating offset\n", __func__, __LINE__);
     code->insert_offset += size;
     return 0;
 
@@ -75,7 +75,7 @@ int self_vm_code_insert_instr(SelfVmCode *code, uint8_t instr)
 
 int self_vm_code_insert_int32(SelfVmCode *code, int32_t int32)
 {
-d_printf("%s (line %d): inserting value %d\n",  __func__, __LINE__, int32);
+//d_printf("%s (line %d): inserting value %d\n",  __func__, __LINE__, int32);
     return insert_data(code, &int32, sizeof(int32_t));
 }
 
@@ -89,7 +89,7 @@ int get_next_data(SelfVmCode *code, void *dst, size_t size)
     if (code->read_offset + size > code->insert_offset)
         return -1;
 
-d_printf("%s (line %d): read offset = %d\n", __func__, __LINE__, code->read_offset);
+//d_printf("%s (line %d): read offset = %d\n", __func__, __LINE__, code->read_offset);
    memcpy(dst, (code->start + code->read_offset), size);
    code->read_offset += size;
    return 0;

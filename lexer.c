@@ -1,34 +1,41 @@
 #include <ctype.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "debug.h"
 #include "error.h"
 #include "lexer.h"
 
-// Read a single ASCII character from the input stream.
-static inline int read_char(LexerContext *ctx, char *buf)
+static int lookahead_char(LexerContext *ctx)
 {
-	return fread(buf, 1, 1, ctx->text_stream);
+    if (ctx->lookahead_char != 0)
+        return ctx->lookahead_char;
+
+    ctx->lookahead_char = fgetc(ctx->text_stream);
+    return ctx->lookahead_char;
 }
+
+static int next_char(LexerContext *ctx)
+{
+    char lookahead_char = ctx->lookahead_char;
+    if (ctx->lookahead_char != 0) {
+        ctx->lookahead_char = 0;
+        return lookahead_char;
+    }
+
+    return fgetc(ctx->text_stream);
+}
+        
 
 // Read the next few digits from the input stream and copy them to the lexer's
 // buffer
 static void read_number(LexerContext *ctx, char first)
 {
-    char cur_char;
-
 	ctx->lex_buf[0] = first;
-	size_t bytes_read = read_char(ctx, &cur_char);
-	if (bytes_read < 0)
-		pr_error("%s (line %d)", __func__, __LINE__);
-	int i = 1;
-	while(bytes_read > 0 && isdigit(cur_char)) {
-		bytes_read = read_char(ctx, &cur_char);
-		if (bytes_read < 0)
-			pr_error("%s (line %d)", __func__, __LINE__);
 
-		ctx->lex_buf[i++] = cur_char;
-	}
+	int i = 1;
+    while (isdigit((char)lookahead_char(ctx)))
+		ctx->lex_buf[i++] = (char)next_char(ctx);
 
 	ctx->lex_buf[i] = '\0';
 }
@@ -81,30 +88,27 @@ static Symbol *eos_symbol() {
 static Symbol *next_sym(LexerContext *ctx)
 {
 	size_t bytes_read;
-    char cur_char;
+    int cur_char;
 
-	while(bytes_read = read_char(ctx, &cur_char)) {
-		if (bytes_read < 0)
-			pr_error("%s (line %d)", __func__, __LINE__);
-
-		if (isspace(cur_char)) {
+    while ((cur_char = next_char(ctx)) != EOF) {
+		if (isspace((char)cur_char)) {
 			continue;
 		}
 
-		if (isdigit(cur_char)) {
+		if (isdigit((char)cur_char)) {
 			read_number(ctx, cur_char);
-			d_puts("Found INT sym");
+			//d_puts("Found INT sym");
 			return int_symbol(atoi(ctx->lex_buf));
-		} else if (cur_char == '+') {
-			d_puts("Found BIN_OP sym");
+		} else if ((char)cur_char == '+') {
+			//d_puts("Found BIN_OP sym");
 			return bin_op_symbol(cur_char);
 		} else {
 			d_printf("%s (line %d): Unexpected character %c\n",
-				__func__, __LINE__, cur_char);
+				__func__, __LINE__, (char)cur_char);
 		}
 	}
 
-	d_puts("Reached end of stream");
+	//d_puts("Reached end of stream");
 	return eos_symbol();
 }
 

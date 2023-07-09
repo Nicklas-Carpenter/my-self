@@ -25,6 +25,7 @@ typedef struct {
 typedef struct {
     Symbol *lookahead_sym;
     FILE *text_stream;
+    int lookahead_char;
     char lex_buf[LEX_BUF_SIZE];
 } LexerContext;
 

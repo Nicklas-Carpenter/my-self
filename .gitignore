@@ -2,6 +2,7 @@
 *.o
 
 # Executables
+codegen_test
 hash_test
 hash_table_test
 self_vm_code_test
