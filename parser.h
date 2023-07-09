@@ -4,10 +4,11 @@
 #include <stdio.h>
 
 #include "lexer.h"
+#include "self_vm.h"
 
-#define AST_NODE_CLASS void (*codegen)(AstNode* self, Code *code)
+#define AST_NODE_CLASS void (*codegen)(struct ast_node *self, SelfVmCode *code)
 
-typedef struct {
+typedef struct ast_node {
 	AST_NODE_CLASS;
 } AstNode;
 

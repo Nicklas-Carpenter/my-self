@@ -5,15 +5,11 @@
 #include "parser.h"
 #include "self_vm.h"
 
-static void codegen_bin_msg_ast_node(Code *code)
-{
-}
-
 AstNode *int_ast_node(Symbol *sym)
 {
 	d_puts("Constructing int AST node");
 	IntAstNode *node = malloc(sizeof(IntAstNode));
-	*node = (IntAstNode){.type = INT_NODE, .value = sym};
+    node->value = sym;
 	return (AstNode *)node;
 }
 
@@ -23,7 +19,6 @@ AstNode *bin_msg_ast_node(AstNode *rcvr, Symbol *op, AstNode *arg)
     d_printf("rcvr = %p; op = %p; arg = %p\n", rcvr, op, arg);
 	BinMsgAstNode *node = malloc(sizeof(BinMsgAstNode));
 	*node = (BinMsgAstNode){
-			.type = BIN_MSG_NODE,
 			.rcvr = rcvr,
 			.bin_op = op,
 			.arg = arg

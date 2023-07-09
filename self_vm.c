@@ -1,8 +1,11 @@
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "self_vm.h"
+#include "debug.h"
 
 SelfVmCode *self_vm_code_alloc(uint8_t size_expo)
 {
@@ -29,144 +32,92 @@ SelfVmCode *self_vm_code_create()
 
 void self_vm_code_destroy(SelfVmCode *code)
 {
-    free(code->code_start);
+    free(code->start);
     free(code);
 }
 
 static inline int self_vm_code_resize(SelfVmCode *code)
 {
-    code->code_start = realloc(code->code_start, 1<<(++code->size_expo));
-    if (code->code_start == NULL)
+    code->start = realloc(code->start, 1<<(++code->size_expo));
+    if (code->start == NULL)
         return -1;
 
     return 0;
 }
 
-static int self_vm_code_insert_byte(SelfVmCode *code, uint8_t byte)
+static int insert_data(SelfVmCode *code, void *data, size_t size)
 {
+d_printf("%s (line %d): inserting %d bytes of data\n", __func__, __LINE__, size);
     // If the number of bytes remaining is less than the size of the data we
     // want to insert, we need to resize before insertion.
-    if (code->insert_offset + sizeof(uint8_t) > 1<<(code->size_expo)) {
+    if (code->insert_offset + size > 1<<(code->size_expo)) {
+d_printf("%s (line %d): Not enough space to insert data. Resizing...\n", __func__, __LINE__);
         // If resizing fails, indicate an error.
         if (self_vm_code_resize(code))
             return -1;
+
     }
 
-    *((uint8_t *)(code->start + code->insert_offset) = byte;
-    code->insert_offset += sizeof(uint8_t);
+d_printf("%s (line %d): insert offset = %d\n", __func__, __LINE__, code->insert_offset);
+    memcpy((code->start + code->insert_offset), data, size);
+d_printf("%s (line %d): Updating offset\n", __func__, __LINE__);
+    code->insert_offset += size;
     return 0;
+
 }
 
-// TODO Do we need to handle the case where resizing does not generate enough
-// room for insertion (e.g. size 2 --> size 4 when attempting 8 to insert
-// bytes)?
-static int self_vm_code_insert_dword(SelfVmCode *code, uint32_t dword)
+
+int self_vm_code_insert_instr(SelfVmCode *code, uint8_t instr)
 {
-    // If the number of bytes remaining is less than the size of the data we
-    // want to insert, we need to resize before insertion.
-    if (code->insert_offset + sizeof(uint32_t) > 1<<(code->size_expo)) {
-        // If resizing fails, indicate an error.
-        if (self_vm_code_resize(code))
-            code->insert_offset -= sizeof(uint32_t);
-    }
-
-    *((uint32_t *)(code->start + code->insert_offset) = dword;
-    code->insert_offset += sizeof(uint32_t);
-    return 0;
-}
-
-// TODO Do we need to handle the case where resizing does not generate enough
-// room for insertion (e.g. size 2 --> size 4 when attempting to insert 8 bytes)?
-static int self_vm_code_insert_ptr(SelfVmCode *code, void *ptr)
-{
-    // If the number of bytes remaining is less than the size of the data we
-    // want to insert, we need to resize before insertion.
-    if (code->insert_offset + sizeof(void *) > 1<<(code->size_expo)) {
-        // If resizing fails, indicate an error.
-        if (self_vm_code_resize(code))
-            return -1;
-    }
-
-    *((void **)(code_start + code->insert_offset) = ptr;
-    code->insert_offset += sizeof(void *);
-    return 0;
-}
-
-int self_vm_code_insert_instr(SelfVmCode *code, SelfVmInstr instr)
-{
-    return self_vm_code_insert_byte(code, (uint8_t)instr);
+    return insert_data(code, (uint8_t *)(&instr), sizeof(uint8_t));
 }
 
 
 int self_vm_code_insert_int32(SelfVmCode *code, int32_t int32)
 {
-    return self_vm_code_insert_dword(code, (uint32_t)int32);
+d_printf("%s (line %d): inserting value %d\n",  __func__, __LINE__, int32);
+    return insert_data(code, &int32, sizeof(int32_t));
 }
 
-int self_vm_code_insert_str_ptr(SelfVmCode *code, char *str_ptr)
+int self_vm_code_insert_str(SelfVmCode *code, char *str_ptr)
 {
-    return self_vm_code_insert_ptr(code, str_ptr);
+    return insert_data(code, &str_ptr, sizeof(char *));
 }
 
-uint8_t self_vm_code_get_next_byte(SelfVmCode *code)
+int get_next_data(SelfVmCode *code, void *dst, size_t size)
 {
-    // Read offset is within data width of insert offset. The number of unread
-    // bytes is smaller than the width of the type of data we want to read.
-    // Indicate an error.
-    if (code->read_offset + sizeof(uint8_t) > code->insert_offset)
-        return NULL;
+    if (code->read_offset + size > code->insert_offset)
+        return -1;
 
-    uint8_t byte = *((uint8_t *)(code->start + code->read_offset++));
-    return byte;
+d_printf("%s (line %d): read offset = %d\n", __func__, __LINE__, code->read_offset);
+   memcpy(dst, (code->start + code->read_offset), size);
+   code->read_offset += size;
+   return 0;
 }
 
-uint32_t self_vm_code_get_next_dword(SelfVmCode *code)
+int self_vm_code_get_next_instr(SelfVmCode *code, uint8_t *instr_p)
 {
-    // Read offset is within data width of insert offset. The number of unread
-    // bytes is smaller than the width of the type of data we want to read.
-    // Indicate an error.
-    if (code->read_offset + sizeof(uint32_t) > code->insert_offset)
-        return NULL;
-
-    uint32_t dword = *((uint32_t *)(code->start + code->read_offset++));
-    return dword;
+    return get_next_data(code, instr_p, sizeof(uint8_t));
 }
 
-uint8_t self_vm_code_get_next_ptr(SelfVmCode *code)
+int self_vm_code_get_next_int32(SelfVmCode *code, int32_t *int_p)
 {
-    // Read offset is within data width of insert offset. The number of unread
-    // bytes is smaller than the width of the type of data we want to read.
-    // Indicate an error.
-    if (code->read_offset + sizeof(void *) > code->insert_offset)
-        return NULL;
-
-    void *ptr = *((void **)(code->start + code->read_offset++));
-    return ptr;
+    return get_next_data(code, int_p, sizeof(int32_t));
 }
 
-SelfVmInstr self_vm_code_get_next_instr(SelfVmCode *code)
+int self_vm_code_get_next_str(SelfVmCode *code, char **str_p)
 {
-    return self_vm_code_get_next_byte(code);
+    return get_next_data(code, str_p, sizeof(char *));
 }
 
-int32_t self_vm_code_get_next_int32(SelfVmCode *code)
-{
-    return (int32_t)self_vm_code_get_new_dword(code);
-}
-
-char *self_vm_code_get_next_str_prt(SelfVmCode *code)
-{
-    return self_vm_code_get_next_ptr(code);
-}
-
-bool self_vm_code_data_remaining(Code *code)
+bool self_vm_code_data_remaining(SelfVmCode *code)
 {
     return code->read_offset < code->insert_offset;
 }
 
 // Set the read offset in the code. Returns -1 to indicate error if the given
 // offset exceeds the size of the code. Returns 0 on success.
-int self_vm_code_seek(Code *code, ptrdiff_t offset)
+int self_vm_code_seek(SelfVmCode *code, ptrdiff_t offset)
 {
     if (offset > (1<<(code->size_expo)))
         return -1;
@@ -175,10 +126,33 @@ int self_vm_code_seek(Code *code, ptrdiff_t offset)
     return 0;
 }
 
-void print_self_vm_code(Code *code)
+void print_self_vm_code(SelfVmCode *code)
 {
     while (self_vm_code_data_remaining(code)) {
-        SelfVmInstr instr = self_vm_code_
-        switch(
+        uint8_t instr;
+        self_vm_code_get_next_instr(code, &instr);
+
+        switch(instr) {
+        case MSG_SEND:
+            char *msg;
+            if (self_vm_code_get_next_str(code, &msg) < 0) {
+                puts("Error. No str ptr after MSG_SEND opcode");
+                return;
+            }
+
+            printf("MSG_SEND %s\n", msg);
+            continue;
+        case NEW_INT:
+            int int_val;
+            if (self_vm_code_get_next_int32(code, &int_val) < 0) {
+                puts("Error. No int value after NEW_INT opcode");
+                return;
+            }
+
+            printf("NEW_INT %d\n", int_val);
+            continue;
+        default:
+            printf("Unknown instruction %d\n", instr);
+        }
     }
 }

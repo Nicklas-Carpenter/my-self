@@ -1,2 +1,8 @@
 # .gitignore
 *.o
+
+# Executables
+hash_test
+hash_table_test
+self_vm_code_test
+self

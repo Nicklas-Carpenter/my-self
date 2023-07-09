@@ -25,16 +25,16 @@ SelfVmCode *self_vm_code_alloc(uint8_t size_expo);
 SelfVmCode *self_vm_code_create(void);
 void self_vm_code_destroy(SelfVmCode *code);
 
-int self_vm_code_insert_instr(SelfVmCode *code, SelfVmInstr instr);
+int self_vm_code_insert_instr(SelfVmCode *code, uint8_t instr);
 int self_vm_code_insert_int32(SelfVmCode *code, int32_t int32);
-int self_vm_code_insert_str_ptr(SelfVmCode *code, char *str_ptr);
+int self_vm_code_insert_str(SelfVmCode *code, char *str_ptr);
 
-SelfVmInstr self_vm_code_get_next_instr(SelfVmCode *code);
-int32_t self_vm_code_get_next_int32(SelfVmCode *code);
-char *self_vm_code_get_next_str_ptr(SelfVmCode *code);
+int self_vm_code_get_next_instr(SelfVmCode *code, uint8_t *instr_p);
+int self_vm_code_get_next_int32(SelfVmCode *code, int32_t *int_p);
+int self_vm_code_get_next_str(SelfVmCode *code, char **str_p);
 
-bool self_vm_code_data_remaining(Code *code);
-int self_vm_code_seek(Code *code, ptrdiff_t offset);
+bool self_vm_code_data_remaining(SelfVmCode *code);
+int self_vm_code_seek(SelfVmCode *code, ptrdiff_t offset);
 
-void print_self_vm_code(Code *code);
+void print_self_vm_code(SelfVmCode *code);
 #endif // SELF_VM_H
