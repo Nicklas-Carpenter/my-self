@@ -156,3 +156,67 @@ void print_self_vm_code(SelfVmCode *code)
         }
     }
 }
+
+SelfStack *self_stack_alloc(uint8_t size_expo)
+{
+    SelfStack *stk = malloc(sizeof(SelfStack));o
+    if (stk == NULL)
+        return NULL;
+
+    *stk = (SelfStack){
+        .items = calloc(1<<size_expo, sizeof(SelfObject)),
+        .size_expo = size_expo,
+        .top = -1 
+    };
+    if (stk->items == NULL) {
+        free(stk);
+        return NULL;
+    }
+
+    return stk;
+}
+
+SelfStack *self_stack_create()
+{
+    return self_stack_alloc(SELF_OBJECT_DEFAULT_SIZE_EXPO);
+}
+
+static int self_stack_resize(SelfStack *stk, uint8_t new_size_expo)
+{    
+    SelfObject *new_items = reallocarray(stk->items, 1<<new_size_expo,
+                                sizeof(SelfObject *));
+    if (new_items == NULL)
+        return -1;
+
+    stk->items = new_items;
+    stk->size_expo = new_size_expo;
+}
+
+int self_stack_push(SelfStack *stk, SelfObject *obj)
+{
+    if (stk->top >= (1<<(stk->size_expo))) {
+        if (self_stack_resize(stk, stk->size_expo + 1) < 0)
+            return -1;
+    }
+
+    stk->items[stk->top++] = obj;
+    return 0;
+}
+
+SelfObject *self_stack_pop(SelfStack *stk)
+{
+    if (stk->top < 0)
+        return NULL;
+
+    return stk->items[stk->top--];
+}
+
+bool self_stack_is_empty(SelfStack *stk)
+{
+    return stk->top < 0;
+}
+
+SelfObject *execute(SelfVmCode *code, SelfStack *stk)
+{
+    
+}
